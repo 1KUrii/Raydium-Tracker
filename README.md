@@ -1,6 +1,6 @@
-# Raydium Monitor
+# Raydium Tracker
 
-Raydium Monitor is a monitor that detects newly created Raydium pools.
+Raydium Tracker is a monitor that detects newly created Raydium pools.
 
 ## Table of Contents
 
