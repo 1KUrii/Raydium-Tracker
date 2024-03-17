@@ -8,7 +8,7 @@ async function main(){
     const Monitor = new TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
 
     // Optional: if you want to receive notifications with special parameters 
-    // Go to the src/Param folder for more information
+    // Go to the src/Evaluator folder for more information
     // You can delete this field and the monitor will show all tokens
     // !!! There could be bugs !!! 
     const Evaluator: TokenEvaluator = createEvaluator()
