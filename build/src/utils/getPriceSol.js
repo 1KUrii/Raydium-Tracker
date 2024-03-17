@@ -35,30 +35,45 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var TransactionMonitor_1 = require("./src/Monitor/TransactionMonitor");
-var createEvaluator_1 = require("./src/Evaluator/createEvaluator");
-function main() {
+exports.getPriceSol = void 0;
+var cross_fetch_1 = __importDefault(require("cross-fetch"));
+// https://price.jup.ag/v4/price?ids=SOL
+// Example data:
+/*
+{
+    data: {
+      SOL: {
+        id: 'So11111111111111111111111111111111111111112',
+        mintSymbol: 'SOL',
+        vsToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        vsTokenSymbol: 'USDC',
+        price: 194.742563068
+      }
+    },
+    timeTaken: 0.00022651399990536447
+  }
+*/
+function getPriceSol() {
     return __awaiter(this, void 0, void 0, function () {
-        var RPC, RAYDIUM_PUBLIC_KEY, Monitor, Evaluator;
+        var quoteResponse;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    RPC = process.env.RPC;
-                    RAYDIUM_PUBLIC_KEY = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
-                    Monitor = new TransactionMonitor_1.TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
-                    Evaluator = (0, createEvaluator_1.createEvaluator)();
-                    Monitor.addEvaluator(Evaluator);
-                    console.log(Monitor.evaluator);
-                    // Beginning of the search
-                    return [4 /*yield*/, Monitor.startMonitoring()];
-                case 1:
-                    // Beginning of the search
-                    _a.sent();
-                    return [2 /*return*/];
+                case 0: return [4 /*yield*/, (0, cross_fetch_1.default)('https://price.jup.ag/v4/price?ids=SOL')];
+                case 1: return [4 /*yield*/, (_a.sent()).json()];
+                case 2:
+                    quoteResponse = _a.sent();
+                    return [2 /*return*/, quoteResponse.data.SOL.price];
             }
         });
     });
 }
-main();
-//# sourceMappingURL=main.js.map
+exports.getPriceSol = getPriceSol;
+// async function getPrice(){
+//     console.log(await getPriceSol())
+// }
+// getPrice()
+//# sourceMappingURL=getPriceSol.js.map

@@ -129,8 +129,8 @@ var MonitorFrame = /** @class */ (function () {
             return pcTokensAmount / Math.pow(10, 9);
         }
         catch (error) {
-            console.error('Error decoding bs58 data:', error);
-            return '--';
+            // console.error('Error decoding Liquidity bs58 data');
+            return -1;
         }
     };
     MonitorFrame.prototype.getAllKeysTwo = function (tokenMint) {

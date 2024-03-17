@@ -60,7 +60,9 @@ var getTokenName_1 = require("../Metadata/getTokenName");
 var TransactionMonitor = /** @class */ (function (_super) {
     __extends(TransactionMonitor, _super);
     function TransactionMonitor(connectionUrl, programPublicKey) {
-        return _super.call(this, connectionUrl, programPublicKey) || this;
+        var _this = _super.call(this, connectionUrl, programPublicKey) || this;
+        _this.evaluator = null;
+        return _this;
     }
     TransactionMonitor.prototype.startMonitoring = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -84,24 +86,29 @@ var TransactionMonitor = /** @class */ (function (_super) {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _b.trys.push([0, 3, , 4]);
+                        _b.trys.push([0, 5, , 6]);
                         if (this.processedTransactions.has(signature))
                             return [2 /*return*/];
                         if (err)
                             return [2 /*return*/];
                         this.processedTransactions.add(signature);
-                        if (!(logs && logs.some(function (log) { return log.includes('initialize2'); }))) return [3 /*break*/, 2];
-                        console.log("New tx pool found: ", (0, generateURL_1.generateSolscanUrl)(signature));
-                        return [4 /*yield*/, this.fetchRaydiumAccounts(signature)];
+                        if (!(logs && logs.some(function (log) { return log.includes('initialize2'); }))) return [3 /*break*/, 4];
+                        console.log("New tx pool found: ", (0, generateURL_1.solscanTxUrl)(signature));
+                        if (!(this.evaluator !== null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.fetchRaydiumAccountsWithEvaluator(signature)];
                     case 1:
                         _b.sent();
-                        _b.label = 2;
-                    case 2: return [3 /*break*/, 4];
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.fetchRaydiumAccounts(signature)];
                     case 3:
+                        _b.sent();
+                        _b.label = 4;
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
                         error_1 = _b.sent();
                         console.error('Error in onLogsCallback:', error_1.message);
                         throw error_1;
-                    case 4: return [2 /*return*/];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -156,6 +163,82 @@ var TransactionMonitor = /** @class */ (function (_super) {
             });
         });
     };
+    TransactionMonitor.prototype.fetchRaydiumAccountsWithEvaluator = function (txId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, poolKeysAll, tokenAName, tokenBName, liquidity, msg, tokenData, evaluations, error_3;
+            var _b, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _d.trys.push([0, 11, , 12]);
+                        return [4 /*yield*/, this.connection.getParsedTransaction(txId, {
+                                maxSupportedTransactionVersion: 0,
+                            })];
+                    case 1:
+                        tx = _d.sent();
+                        if (!tx) {
+                            throw new Error('Failed to fetch transaction with signature ' + txId);
+                        }
+                        return [4 /*yield*/, this.getPoolKeysAll(tx)];
+                    case 2:
+                        poolKeysAll = _d.sent();
+                        tokenAName = (0, getTokenName_1.getTokenName)(poolKeysAll.baseMint);
+                        tokenBName = (0, getTokenName_1.getTokenName)(poolKeysAll.quoteMint);
+                        liquidity = this.decodeLiquidity(tx, poolKeysAll.baseMint);
+                        _b = {
+                            txId: txId,
+                            tokenAAccount: poolKeysAll.baseMint,
+                            tokenBAccount: poolKeysAll.quoteMint
+                        };
+                        return [4 /*yield*/, tokenAName];
+                    case 3:
+                        _b.tokenAName = _d.sent();
+                        return [4 /*yield*/, tokenBName];
+                    case 4:
+                        msg = (_b.tokenBName = _d.sent(),
+                            _b.liquidity = liquidity,
+                            _b);
+                        _c = {
+                            liquidity: liquidity,
+                            mintable: null,
+                            mutable: null
+                        };
+                        return [4 /*yield*/, tokenAName];
+                    case 5:
+                        _c.tokenAName = _d.sent();
+                        return [4 /*yield*/, tokenAName];
+                    case 6:
+                        tokenData = (_c.tokenBName = _d.sent(),
+                            _c.ownership = null,
+                            _c.lpBurnt = null,
+                            _c);
+                        return [4 /*yield*/, ((_a = this.evaluator) === null || _a === void 0 ? void 0 : _a.evaluate(tokenData))];
+                    case 7:
+                        evaluations = _d.sent();
+                        if (!evaluations) return [3 /*break*/, 9];
+                        // Send new message about new token pool
+                        return [4 /*yield*/, (0, outputToken_1.outputToken)(msg)];
+                    case 8:
+                        // Send new message about new token pool
+                        _d.sent();
+                        return [3 /*break*/, 10];
+                    case 9:
+                        console.log("Token doesn't fit the criteria");
+                        _d.label = 10;
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        error_3 = _d.sent();
+                        console.error('Error in fetchRaydiumAccounts');
+                        return [2 /*return*/];
+                    case 12: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransactionMonitor.prototype.addEvaluator = function (Evaluator) {
+        this.evaluator = Evaluator;
+    };
     return TransactionMonitor;
 }(MonitorFrame_1.MonitorFrame));
 exports.TransactionMonitor = TransactionMonitor;
@@ -163,7 +246,9 @@ exports.TransactionMonitor = TransactionMonitor;
 //   const RPC = process.env.RPC as string;
 //   const RAYDIUM_PUBLIC_KEY: string = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
 //   const Monitor = new TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
-//   await Monitor.fetchRaydiumAccounts('4XRa8kNR7uJNLzGegSpqGh6oHKsTVn8uSHXUuFGnhnNr8KxFrBfYMGYp4BHkmiX3FZXPKF6ttWBvyGHmJ2zNAtbL') // pepe
+//   const Evaluator: TokenEvaluator = createEvaluator()
+//   Monitor.addEvaluator(Evaluator);
+//   await Monitor.fetchRaydiumAccountsWithEvaluator('4XRa8kNR7uJNLzGegSpqGh6oHKsTVn8uSHXUuFGnhnNr8KxFrBfYMGYp4BHkmiX3FZXPKF6ttWBvyGHmJ2zNAtbL') // pepe
 // }
 // test()
 //# sourceMappingURL=TransactionMonitor.js.map

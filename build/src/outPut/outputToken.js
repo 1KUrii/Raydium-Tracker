@@ -42,12 +42,11 @@ function outputToken(msg) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             console.log('New pair is added on Raydium');
-            console.log("Pair: ".concat(msg.tokenAName, "-").concat(msg.tokenBName));
-            console.log("SolanaScan: ".concat((0, generateURL_1.generateSolscanUrl)(msg.txId)));
-            console.log("Explorer ".concat(msg.tokenAName, ": ").concat((0, generateURL_1.generateSolscanUrl)(msg.tokenAAccount)));
-            console.log("Explorer ".concat(msg.tokenBName, ": ").concat((0, generateURL_1.generateSolscanUrl)(msg.tokenBAccount)));
-            console.log("Liquidity: ".concat(msg.liquidity, " SOL"));
-            console.log('📈 Trade on Birdeye:', (0, generateURL_1.generateBirdeyeUrl)(msg.tokenAAccount));
+            console.log("Pair: ".concat(msg.tokenAName, "-").concat(msg.tokenBName, " ").concat((0, generateURL_1.solscanTxUrl)(msg.txId)));
+            console.log("BaseToken: ".concat(msg.tokenAName, " ").concat((0, generateURL_1.solscanTokenUrl)(msg.tokenAAccount)));
+            console.log("QuoteToken: ".concat(msg.tokenBName, " ").concat((0, generateURL_1.solscanTokenUrl)(msg.tokenBAccount)));
+            console.log("Liquidity: ".concat((msg.liquidity != -1) ? (msg.liquidity) : ('--'), " SOL"));
+            console.log('📈 Trade on Birdeye:', (0, generateURL_1.birdeyeUrl)(msg.tokenAAccount));
             console.log();
             return [2 /*return*/];
         });

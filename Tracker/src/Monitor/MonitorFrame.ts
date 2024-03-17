@@ -75,7 +75,7 @@ export abstract class MonitorFrame {
       
     }
   
-    decodeLiquidity(tx: ParsedTransactionWithMeta | null, tokenA: PublicKey): number | string {
+    decodeLiquidity(tx: ParsedTransactionWithMeta | null, tokenA: PublicKey): number {
       try {
         const firstTokenSol = (tokenA.equals(this.SOL_MINT)) ? true : false;
         
@@ -96,8 +96,8 @@ export abstract class MonitorFrame {
         return pcTokensAmount / 10 ** 9;
         
       } catch (error) {
-        console.error('Error decoding bs58 data:', error);
-        return '--';
+        // console.error('Error decoding Liquidity bs58 data');
+        return -1;
       }
     }
 

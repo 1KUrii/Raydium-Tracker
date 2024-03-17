@@ -36,29 +36,40 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var TransactionMonitor_1 = require("./src/Monitor/TransactionMonitor");
-var createEvaluator_1 = require("./src/Evaluator/createEvaluator");
-function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var RPC, RAYDIUM_PUBLIC_KEY, Monitor, Evaluator;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    RPC = process.env.RPC;
-                    RAYDIUM_PUBLIC_KEY = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
-                    Monitor = new TransactionMonitor_1.TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
-                    Evaluator = (0, createEvaluator_1.createEvaluator)();
-                    Monitor.addEvaluator(Evaluator);
-                    console.log(Monitor.evaluator);
-                    // Beginning of the search
-                    return [4 /*yield*/, Monitor.startMonitoring()];
-                case 1:
-                    // Beginning of the search
-                    _a.sent();
-                    return [2 /*return*/];
-            }
+exports.TokenEvaluator = void 0;
+var TokenEvaluator = /** @class */ (function () {
+    function TokenEvaluator() {
+        this.Strategies = [];
+    }
+    TokenEvaluator.prototype.addStrategy = function (strategy) {
+        this.Strategies.push(strategy);
+    };
+    TokenEvaluator.prototype.evaluate = function (tokenData) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _i, _a, strategy;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _i = 0, _a = this.Strategies;
+                        _b.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3 /*break*/, 4];
+                        strategy = _a[_i];
+                        return [4 /*yield*/, strategy.evaluate(tokenData)];
+                    case 2:
+                        if ((_b.sent()) === false) {
+                            return [2 /*return*/, false];
+                        }
+                        _b.label = 3;
+                    case 3:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/, true];
+                }
+            });
         });
-    });
-}
-main();
-//# sourceMappingURL=main.js.map
+    };
+    return TokenEvaluator;
+}());
+exports.TokenEvaluator = TokenEvaluator;
+//# sourceMappingURL=TokenEvaluator.js.map

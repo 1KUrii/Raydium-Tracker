@@ -6,5 +6,5 @@ export interface newPairLiqudity {
     tokenBAccount: PublicKey | string,
     tokenAName: PublicKey | string,
     tokenBName: PublicKey | string,
-    liquidity: number | string
+    liquidity: number
 }

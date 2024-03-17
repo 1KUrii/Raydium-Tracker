@@ -36,29 +36,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var TransactionMonitor_1 = require("./src/Monitor/TransactionMonitor");
-var createEvaluator_1 = require("./src/Evaluator/createEvaluator");
-function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var RPC, RAYDIUM_PUBLIC_KEY, Monitor, Evaluator;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    RPC = process.env.RPC;
-                    RAYDIUM_PUBLIC_KEY = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
-                    Monitor = new TransactionMonitor_1.TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
-                    Evaluator = (0, createEvaluator_1.createEvaluator)();
-                    Monitor.addEvaluator(Evaluator);
-                    console.log(Monitor.evaluator);
-                    // Beginning of the search
-                    return [4 /*yield*/, Monitor.startMonitoring()];
-                case 1:
-                    // Beginning of the search
-                    _a.sent();
-                    return [2 /*return*/];
-            }
+exports.ExampleStrategy = void 0;
+// Inherit from the interface IEvaluationStrategy And be sure to implement the method evaluate
+var ExampleStrategy = /** @class */ (function () {
+    function ExampleStrategy() {
+    }
+    /*
+        You can create your own fields and methods inside this class,
+        but passing it to the evaluator will run only the evaluate
+    */
+    ExampleStrategy.prototype.evaluate = function (tokenData) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (tokenData.liquidity !== null && tokenData) {
+                    return [2 /*return*/, true];
+                }
+                return [2 /*return*/, false];
+            });
         });
-    });
-}
-main();
-//# sourceMappingURL=main.js.map
+    };
+    return ExampleStrategy;
+}());
+exports.ExampleStrategy = ExampleStrategy;
+//# sourceMappingURL=ExampleStratagie.js.map
