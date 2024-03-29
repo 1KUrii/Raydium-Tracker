@@ -4,10 +4,11 @@ import { MonitorFrame } from './MonitorFrame';
 import { solscanTxUrl } from '../outPut/generateURL';
 import { outputToken } from '../outPut/outputToken';
 import { getTokenName } from '../Metadata/getTokenName';
-import { newPairLiqudity } from '../outPut/Interface/msgInterface';
 import { TokenEvaluator } from '../Evaluator/TokenEvaluator';
-import { ITokenData } from '../Evaluator/Interface/tokenData';
+import { ITokenData } from '../Interface/tokenData';
 import { createEvaluator } from '../Evaluator/createEvaluator';
+import { getTokenMutable } from '../Metadata/getTokenMutable';
+import { getMint } from "@solana/spl-token";
 
 export class TransactionMonitor extends MonitorFrame{
   public evaluator: TokenEvaluator | null = null;
@@ -51,34 +52,11 @@ export class TransactionMonitor extends MonitorFrame{
 
   async fetchRaydiumAccounts(txId: string) {
     try {
-      const tx = await this.connection.getParsedTransaction(txId, {
-        maxSupportedTransactionVersion: 0,
-      });
-
-      if (!tx) {
-        throw new Error('Failed to fetch transaction with signature ' + txId);
-      }
-    
-
-      const poolKeysAll: LiquidityPoolKeys = await this.getPoolKeysAll(tx) as LiquidityPoolKeys;
-      
-      
-      const tokenAName = getTokenName(poolKeysAll.baseMint);
-      const tokenBName =  getTokenName(poolKeysAll.quoteMint);
-      const liquidity = this.decodeLiquidity(tx, poolKeysAll.baseMint);
-
-      const msg: newPairLiqudity = {
-        txId,
-        tokenAAccount: poolKeysAll.baseMint,
-        tokenBAccount: poolKeysAll.quoteMint,
-        tokenAName: await tokenAName,
-        tokenBName: await tokenBName,
-        liquidity,
-      };
+      const tokenData = await this.getAllDataFromTx(txId)
+      if (!tokenData) return
 
       // Send new message about new token pool
-      await outputToken(msg);
-
+      await outputToken(tokenData);
     } catch (error) {
       console.error('Error in fetchRaydiumAccounts');
       return
@@ -87,52 +65,60 @@ export class TransactionMonitor extends MonitorFrame{
 
   async fetchRaydiumAccountsWithEvaluator(txId: string) {
     try {
+      const tokenData = await this.getAllDataFromTx(txId)
+      if (!tokenData) return
+
+      const evaluations = await this.evaluator?.evaluate(tokenData);
+      if (evaluations) {
+        // Send new message about new token pool
+        await outputToken(tokenData);
+      }
+      else {
+        console.log("Token doesn't fit the criteria\n")
+      }
+    } catch (error) {
+      console.error('Error in fetchRaydiumAccountsWithEvaluator');
+      return
+    }
+  }
+
+  async getAllDataFromTx(txId: string) {
+    try {
       const tx = await this.connection.getParsedTransaction(txId, {
         maxSupportedTransactionVersion: 0,
       });
 
       if (!tx) {
-        throw new Error('Failed to fetch transaction with signature ' + txId);
+        console.log('Failed to fetch transaction with signature ' + txId);
+        return
       }
     
-
       const poolKeysAll: LiquidityPoolKeys = await this.getPoolKeysAll(tx) as LiquidityPoolKeys;
-      
       
       const tokenAName = getTokenName(poolKeysAll.baseMint);
       const tokenBName =  getTokenName(poolKeysAll.quoteMint);
+      const isMutable = getTokenMutable(poolKeysAll.baseMint)
       const liquidity = this.decodeLiquidity(tx, poolKeysAll.baseMint);
 
-      const msg: newPairLiqudity = {
+      let mintAccount = await getMint(this.connection, poolKeysAll.baseMint);
+      const totalSupply = Number(mintAccount.supply) / 10**mintAccount.decimals
+      const freezeAuthority = (mintAccount.mintAuthority === null) ? true : false; 
+
+      const tokenData: ITokenData = {
         txId,
         tokenAAccount: poolKeysAll.baseMint,
         tokenBAccount: poolKeysAll.quoteMint,
         tokenAName: await tokenAName,
         tokenBName: await tokenBName,
-        liquidity,
-      };
-
-      const tokenData: ITokenData = {
         liquidity: liquidity as number,
-        mintable: null,
-        mutable: null,
-        tokenAName: await tokenAName,
-        tokenBName: await tokenAName,
-        ownership: null,
-        lpBurnt: null,
+        totalSupply: totalSupply,
+        freezeAuthority: freezeAuthority,
+        mutable: await isMutable,
       };
 
-      const evaluations = await this.evaluator?.evaluate(tokenData);
-      if (evaluations) {
-        // Send new message about new token pool
-        await outputToken(msg);
-      }
-      else {
-        console.log("Token doesn't fit the criteria")
-      }
-
+      return tokenData
     } catch (error) {
-      console.error('Error in fetchRaydiumAccounts');
+      console.error('Error in getAllDataFromTx');
       return
     }
   }
@@ -140,21 +126,21 @@ export class TransactionMonitor extends MonitorFrame{
   addEvaluator(Evaluator: TokenEvaluator) {
     this.evaluator = Evaluator
   }
-
- 
 }
 
 
 
 
-// async function test(){
-//   const RPC = process.env.RPC as string;
-//   const RAYDIUM_PUBLIC_KEY: string = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
-//   const Monitor = new TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
-//   const Evaluator: TokenEvaluator = createEvaluator()
-//   Monitor.addEvaluator(Evaluator);
-//   await Monitor.fetchRaydiumAccountsWithEvaluator('4XRa8kNR7uJNLzGegSpqGh6oHKsTVn8uSHXUuFGnhnNr8KxFrBfYMGYp4BHkmiX3FZXPKF6ttWBvyGHmJ2zNAtbL') // pepe
-// }
+async function test(){
+  const RPC = process.env.RPC as string;
+  const RAYDIUM_PUBLIC_KEY: string = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
+  const Monitor = new TransactionMonitor(RPC, RAYDIUM_PUBLIC_KEY);
+  const Evaluator: TokenEvaluator = createEvaluator()
+  Monitor.addEvaluator(Evaluator);
+  await Monitor.fetchRaydiumAccounts('638Ac1WnJ3cJvug1U9CuC3gv5F94chcacuqaZrgLqcxiqR2LbYEPUxyzrSbjzZHoDbQgi3bMrvzmKjaMBwiuS9WC') // pepe
+  // await Monitor.getAllDataFromTx('5Kmnc4bwqjayz1QoiDcugAPBeK4Aq4hBsxxG1pcTMrDJ3GAkW4C13s7S6WZuQArYxWUgjmfSwcVxeBn1Mhxc7qNC') // pepe
+
+}
 
 // test()
 

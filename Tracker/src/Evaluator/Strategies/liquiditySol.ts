@@ -1,5 +1,5 @@
-import { IEvaluationStrategy } from "../Interface/evaluationStrategy";
-import { ITokenData } from "../Interface/tokenData";
+import { IEvaluationStrategy } from "../../Interface/evaluationStrategy";
+import { ITokenData } from "../../Interface/tokenData";
 
 export class liquiditySolStrategy implements IEvaluationStrategy {
     minSolLiquidity = 0.01; // In Sol 0.01 Sol

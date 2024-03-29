@@ -1,5 +1,5 @@
-import { IEvaluationStrategy } from "../Interface/evaluationStrategy";
-import { ITokenData } from "../Interface/tokenData";
+import { IEvaluationStrategy } from "../../Interface/evaluationStrategy";
+import { ITokenData } from "../../Interface/tokenData";
 
 // Inherit from the interface IEvaluationStrategy And be sure to implement the method evaluate
 export class ExampleStrategy implements IEvaluationStrategy {

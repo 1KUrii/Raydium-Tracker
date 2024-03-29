@@ -1,5 +1,5 @@
-import { IEvaluationStrategy } from "./Interface/evaluationStrategy";
-import { ITokenData } from "./Interface/tokenData";
+import { IEvaluationStrategy } from "../Interface/evaluationStrategy";
+import { ITokenData } from "../Interface/tokenData";
 
 export class TokenEvaluator {
     private Strategies: IEvaluationStrategy[];

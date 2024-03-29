@@ -1,6 +1,6 @@
 import { getPriceSol } from '../../utils/getPriceSol';
-import { IEvaluationStrategy } from '../Interface/evaluationStrategy';
-import { ITokenData } from '../Interface/tokenData';
+import { IEvaluationStrategy } from '../../Interface/evaluationStrategy';
+import { ITokenData } from '../../Interface/tokenData';
 
 export class liquidityUsdStrategy implements IEvaluationStrategy {
     private minLiquidity: number = 100; // In Usd 100 $
